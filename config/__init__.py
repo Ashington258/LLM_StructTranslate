@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Dict, Any
@@ -39,10 +40,15 @@ class Config:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
+        # 优先从环境变量读取敏感信息（API key 和 base_url），避免推送到云端
+        api_key = os.getenv("API_KEY") or data["api"]["key"]
+        api_base_url = os.getenv("API_BASE_URL") or data["api"]["base_url"]
+        api_model = os.getenv("API_MODEL") or data["api"]["model"]
+
         return cls(
-            api=ApiConfig(**data["api"]),
+            api=ApiConfig(key=api_key, base_url=api_base_url, model=api_model),
             files=FileConfig(**data["files"]),
-            translation=TranslationConfig(**data["translation"])
+            translation=TranslationConfig(**data["translation"]),
         )
 
 
