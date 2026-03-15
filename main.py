@@ -96,14 +96,14 @@ Markdown:
 # ============================
 
 
-def load_cache():
-    if Path(config.files.cache).exists():
-        return json.loads(Path(config.files.cache).read_text())
+def load_cache(cache_path):
+    if cache_path.exists():
+        return json.loads(cache_path.read_text())
     return {}
 
 
-def save_cache(cache):
-    Path(config.files.cache).write_text(json.dumps(cache, ensure_ascii=False, indent=2))
+def save_cache(cache, cache_path):
+    cache_path.write_text(json.dumps(cache, ensure_ascii=False, indent=2))
 
 
 # ============================
@@ -115,7 +115,7 @@ def save_cache(cache):
 stop_event = threading.Event()
 
 
-def translate_section(idx, section, cache, total_count):
+def translate_section(idx, section, cache, cache_path, total_count):
 
     if stop_event.is_set():
         raise KeyboardInterrupt()
@@ -129,7 +129,7 @@ def translate_section(idx, section, cache, total_count):
     try:
         translated = translate_text(section)
         cache[str(idx)] = translated
-        save_cache(cache)
+        save_cache(cache, cache_path)
         print(f"[{idx+1}/{total_count}] ✓ 翻译完成，已保存缓存")
     except Exception as e:
         print(f"[{idx+1}/{total_count}] ✗ 翻译失败：{e}")
@@ -159,14 +159,10 @@ def main():
     signal.signal(signal.SIGINT, _handle_sigint)
 
     input_path = Path(config.files.input)
-    # 自动生成输出路径：file/output + 输入相对路径 + 文件名_CN.扩展名
-    relative_path = input_path.relative_to("file/input")
-    output_path = (
-        Path("file/output")
-        / relative_path.parent
-        / (input_path.stem + "_CN" + input_path.suffix)
-    )
-    output_path.parent.mkdir(parents=True, exist_ok=True)  # 确保目录存在
+    # 输出路径：input 同目录下生成 xxx_CN.md
+    # 缓存路径：input 同目录下 generate translate_cache.json
+    output_path = input_path.parent / (input_path.stem + "_CN" + input_path.suffix)
+    cache_path = input_path.parent / "translate_cache.json"
 
     text = input_path.read_text(encoding="utf-8")
 
@@ -176,12 +172,13 @@ def main():
     print("=" * 50)
     print("输入文件：" + str(input_path))
     print("输出文件：" + str(output_path))
+    print("缓存文件：" + str(cache_path))
     print("模型：" + config.api.model)
     print("并发数：" + str(config.translation.max_workers))
     print("=" * 50)
     print("共 " + str(total_count) + " 个章节")
 
-    cache = load_cache()
+    cache = load_cache(cache_path)
     cached_count = len(cache)
     print("缓存命中：" + str(cached_count) + "/" + str(total_count))
     print("=" * 50)
@@ -192,7 +189,7 @@ def main():
     with ThreadPoolExecutor(config.translation.max_workers) as executor:
 
         futures = {
-            executor.submit(translate_section, i, sec, cache, total_count): i
+            executor.submit(translate_section, i, sec, cache, cache_path, total_count): i
             for i, sec in enumerate(sections)
         }
 
@@ -219,11 +216,8 @@ def main():
 
     output_path.write_text(final_text, encoding="utf-8")
 
-    # 删除缓存文件（每次运行到最终结果后清理）
-    cache_path = Path(config.files.cache)
-    if cache_path.exists():
-        cache_path.unlink()
-        print(f"已删除缓存：{cache_path}")
+    # 保留缓存文件，不再删除
+    print(f"缓存文件保留：{cache_path}")
 
     print("=" * 50)
     print("done!")
