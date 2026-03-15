@@ -4,7 +4,7 @@
 
 > 适用场景：论文/博客/文档的批量翻译；希望保留原始 Markdown 结构（标题、列表、代码块、公式等）。
 
----
+
 
 ## 功能特性
 
@@ -14,7 +14,7 @@
 - **可中途停止**：运行时按 `Ctrl + C`，会在安全点停止（便于中途换模型/改配置后继续跑）
 - **输出与缓存就地生成**：在输入文件所在目录生成 `*_CN.md` 与 `translate_cache.json`
 
----
+
 
 ## 目录结构（简要）
 
@@ -34,7 +34,7 @@
 
 > 说明：目前 `main.py` 的输出路径逻辑为“**输入文件同目录输出**”，不再写到 `file/output`。
 
----
+
 
 ## 安装
 
@@ -45,13 +45,19 @@
 - Python 3.9+（建议）
 - `openai`（兼容 OpenAI SDK 风格接口的服务也可用）
 
-安装：
+**方式 A：使用 requirements.txt（推荐）**
+
+```bash
+pip install -r requirements.txt
+```
+
+**方式 B：手动安装**
 
 ```bash
 pip install openai
 ```
 
----
+
 
 ## 配置
 
@@ -93,7 +99,7 @@ cp config/config.example.json config/config.json
 
 > 注意：仓库的 `.gitignore` 已忽略 `config/config.json`，避免误提交。
 
----
+
 
 ## 使用方法
 
@@ -117,7 +123,7 @@ python main.py
 
 运行时会打印：输入文件、输出文件、缓存文件、模型、并发数、章节数、缓存命中等信息。
 
----
+
 
 ## 输出与缓存规则（重要）
 
@@ -136,7 +142,7 @@ python main.py
 
 > 当前版本：**缓存文件会保留，不再在结束时删除**，以便断点续跑。
 
----
+
 
 ## 中途暂停/停止（换模型/改配置）
 
@@ -152,7 +158,7 @@ python main.py
 2. 重新运行 `python main.py`
 3. 会从缓存继续未完成章节
 
----
+
 
 ## 可调参数
 
@@ -163,7 +169,7 @@ python main.py
 
 > 提醒：并发太高可能触发服务端限流（429），可适当降低并发或增加重试等待。
 
----
+
 
 ## 常见问题（FAQ）
 
@@ -184,7 +190,7 @@ python main.py
 
 可以，只要接口兼容 OpenAI Chat Completions 风格，并正确设置 `base_url` 与 `api_key`。
 
----
+
 
 ## 开发说明
 
