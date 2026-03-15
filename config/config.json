@@ -1,0 +1,15 @@
+{
+  "api": {
+    "key": "*",
+    "base_url": "*",
+    "model": "*"
+  },
+  "files": {
+    "input": "file/input/2409.15306v1/auto/2409.15306v1.md",
+    "output": "自动生成，无需指定",
+    "cache": "translate_cache.json"
+  },
+  "translation": {
+    "max_workers": 5
+  }
+}
